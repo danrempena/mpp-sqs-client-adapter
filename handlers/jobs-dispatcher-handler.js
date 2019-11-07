@@ -1,6 +1,5 @@
 
-
-module.exports.main = (event, context, callback) => {
+export const main = (event, context, callback) => {
   const response = {
     statusCode: 200,
     body: JSON.stringify({

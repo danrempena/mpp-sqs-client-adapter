@@ -31,6 +31,15 @@ provider:
   #  sampleEnvVar: ${env:SAMPLE_ENV_VAR}
 
   iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - ssm:GetParameter
+        - ssm:PutParameter
+        - ssm:GetParameters
+        - ssm:GetParametersByPath
+        - ssm:GetParameterHistory
+      Resource:
+        - "arn:aws:ssm:ap-northeast-1:193400596843:parameter/mpp-clients/*"
     - Effect: "Allow"
       Action:
         - "sqs:SendMessage"
@@ -50,12 +59,12 @@ functions:
       - sqs:
           arn:
             Fn::GetAtt:
-              - MyQueue
+              - JobsQueue
               - Arn
 
 resources:
   Resources:
-    MyQueue:
+    JobsQueue:
       Type: "AWS::SQS::Queue"
       Properties:
         QueueName: "JobsQueue"
