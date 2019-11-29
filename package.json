@@ -15,9 +15,11 @@
   "devDependencies": {
     "serverless-bundle": "^1.2.5",
     "serverless-dotenv-plugin": "^2.1.1",
-    "serverless-offline": "^5.3.3"
+    "serverless-offline": "^5.3.3",
+    "jwt-decode": "^2.2.0"
   },
   "dependencies": {
-    "axios": "^0.18.1"
+    "axios": "^0.18.1",
+    "aws-sdk": "^2.475.0"
   }
 }

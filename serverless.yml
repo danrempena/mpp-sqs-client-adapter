@@ -6,6 +6,7 @@ package:
   individually: true
 
 custom:
+  stage: ${opt:stage, self:provider.stage}
   bundle:
     sourcemaps: true      # Enable source maps
     caching: true         # Enable Webpack caching
@@ -22,6 +23,7 @@ provider:
   runtime: nodejs10.x
   stage: dev
   region: ap-northeast-1
+  account: 193400596843
   # To load environment variables externally
   # rename env.example to .env and uncomment
   # the following line. Also, make sure to not
@@ -39,28 +41,27 @@ provider:
         - ssm:GetParametersByPath
         - ssm:GetParameterHistory
       Resource:
-        - "arn:aws:ssm:ap-northeast-1:193400596843:parameter/mpp-clients/*"
+        - "arn:aws:ssm:ap-northeast-1:${self:provider.account}:parameter/mpp-clients/*"
     - Effect: "Allow"
       Action:
-        - "sqs:SendMessage"
-        - "sqs:GetQueueUrl"
+        - sqs:DeleteMessage
+        - sqs:GetQueueUrl
+        - sqs:SendMessage
+        - sqs:GetQueueAttributes
       Resource: "arn:aws:sqs:${self:provider.region}:*:JobsQueue"
     - Effect: "Allow"
       Action:
-        - "sqs:ListQueues"
-      Resource: "arn:aws:sqs:${self:provider.region}:*:*"
+        - sqs:DeleteMessage
+        - sqs:GetQueueUrl
+        - sqs:SendMessage
+        - sqs:GetQueueAttributes
+      Resource: "arn:aws:sqs:${self:provider.region}:*:DeadLetterQueue"
 
 functions:
   SPRunner:
     handler: handlers/sp-runner-handler.main
   JobsDispatcher:
     handler: handlers/jobs-dispatcher-handler.main
-    events:
-      - sqs:
-          arn:
-            Fn::GetAtt:
-              - JobsQueue
-              - Arn
 
 resources:
   Resources:
@@ -68,3 +69,21 @@ resources:
       Type: "AWS::SQS::Queue"
       Properties:
         QueueName: "JobsQueue"
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+              - JobsDeadLetterQueue
+              - Arn
+          maxReceiveCount: 4
+    JobsDeadLetterQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "JobsDeadLetterQueue"
+    JobsQueueUrlParameter:
+      Type: "AWS::SSM::Parameter"
+      Properties:
+        Name: "/mpp-clients/JOBS_QUEUE_URL"
+        Value:
+          Ref: JobsQueue
+        Type: String
+
