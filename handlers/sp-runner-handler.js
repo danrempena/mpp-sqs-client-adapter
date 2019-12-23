@@ -1,66 +1,42 @@
-import AWS from 'aws-sdk'
 import axios from 'axios'
 import helper from '../lib/helper'
-
-const sqs = new AWS.SQS({ apiVersion: '2012-11-05' })
-const ssm = new AWS.SSM({ apiVersion: '2014-11-06' })
-
 var clientInfo = ''
 
-export const main = (event, context, callback) => {
+export class SpRunnerHandler {
 
-  const { client, jobs } = event.detail
-  var AWS_ACCOUNT = context.invokedFunctionArn.split(':')[4]
-  console.log(AWS_ACCOUNT)
-  var QUEUE_URL = `https://sqs.ap-northeast-1.amazonaws.com/${AWS_ACCOUNT}/JobsQueue`
-  clientInfo = client
-
-  async function runMPPQuery (jobs) {
-
-    await Promise.all(jobs.map(async (job) => {
-      const { data } = await mppSQLAxios.post('/queries', {
-        query: job.query,
-        /*options: {
-          type: 'SELECT'
-        }*/
-      })
-
-      if (Boolean(data) && data.length) {
-        console.log('SP Results Length: ', data.length)
-
-        const params = {
-          MessageBody: JSON.stringify(data),
-          QueueUrl: QUEUE_URL
-        }
-        // console.log(data)
-        sqs.sendMessage(params, function (err, data) {
-          if (err) {
-            console.log('error:', 'Fail Send Message' + err)
-
-            const response = {
-              statusCode: 500,
-              body: JSON.stringify({
-                message: 'ERROR'
-              })
-            }
-            callback(response)
-          } else {
-            console.log('data:', data)
-            const response = {
-              statusCode: 200,
-              body: JSON.stringify({
-                messageId: data.MesssageId,
-                message: data
-              })
-            }
-            callback(null, response)
-          }
-        })
-      }
-    }))
+  constructor (event, context) {
+    this._event = event
+    this._context = context
   }
 
-  return runMPPQuery(jobs)
+  async main(callback) {
+    try {
+      const { client , jobs } = this._event.detail
+      clientInfo = client
+
+      await Promise.all(jobs.map(async (job) => {
+        const { data } = await mppSQLAxios.post('/queries', {
+          query: job.query,
+          /*options: {
+            type: 'SELECT'
+          }*/
+        })
+
+        const jobData = {
+          data: { ...this._event.detail,  SPResults : data}
+        }
+        if (Boolean(data) && data.length) {
+          console.log('SP Results Length: ', data.length)
+
+          await helper.enqueue_sp_results(jobData)
+        }
+      }))
+      callback(null, 'Success')
+    }catch (error) {
+      console.error(error)
+      callback(error)
+    }
+  }
 
 }
 
@@ -98,4 +74,7 @@ mppSQLAxios.interceptors.request.use(async (opts) => {
   return Promise.reject(error)
 })
 
-export default main
+export const main = async (event, context, callback) => {
+  const handler = new SpRunnerHandler(event, context)
+  await handler.main(callback)
+}

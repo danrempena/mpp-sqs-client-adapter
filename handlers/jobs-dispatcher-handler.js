@@ -1,17 +1,30 @@
+import helper from '../lib/helper'
+import AWS from "aws-sdk"
 
-export const main = (event, context, callback) => {
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: 'SQS event processed.',
-      input: event,
-    })
+const lambda = new AWS.Lambda({apiVersion: '2015-03-31'})
+
+export class JobsDispatcherHandler {
+
+  constructor (event, context) {
+    this._event = event
+    this._context = context
   }
 
-  console.log('event: ', JSON.stringify(event))
+  async main(callback) {
+    try{
+      const { Messages : data } = await helper.dispatch_sp_results()
+      // const queueMessages = await helper.dispatch_sp_results()
 
-  var body = event.Records[0].body
-  console.log("text: ", JSON.parse(body).text)
+      console.log(data)
+      callback(null, 'Success')
+    }catch (error) {
+      console.error(error)
+      callback(error)
+    }
+  }
+}
 
-  callback(null, response)
-};
+export const main = async (event, context, callback) => {
+  const handler = new JobsDispatcherHandler(event, context)
+  await handler.main(callback)
+}
