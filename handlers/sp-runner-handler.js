@@ -23,11 +23,10 @@ export class SpRunnerHandler {
         })
 
         const jobData = {
-          data: { ...this._event.detail,  SPResults : data}
+          data: { client, job,  SPResults : data}
         }
         if (Boolean(data) && data.length) {
           console.log('SP Results Length: ', data.length)
-
           await helper.enqueue_sp_results(jobData)
         }
       }))

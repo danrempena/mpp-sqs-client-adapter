@@ -1,0 +1,30 @@
+{
+  "id": "cdc73f9d-aea9-11e3-9d5a-835b769c0d9c",
+  "detail-type": "Scheduled Event",
+  "source": "aws.events",
+  "account": "{{account-id}}",
+  "time": "1970-01-01T00:00:00Z",
+  "region": "ap-northeast-1",
+  "resources": [
+    "arn:aws:iam::193400596843:role/mpp-clients-travillio-custom-apis-dev-ap-northeast-1-lambdaRole"
+  ],
+  "detail": {
+    "client": {
+      "name": "travillio",
+      "secret": "/mpp-clients/travillio/dev/MSA_CLIENT_SECRET",
+      "ID": "/mpp-clients/travillio/dev/MSA_CLIENT_ID"
+    },
+    "jobs" : [
+      {
+        "name": "iDecideCreateUser",
+        "query" : "SELECT * FROM [dbo].[iDecideUsers] WHERE [iDecideID] IS NULL",
+        "function": "arn:aws:lambda:ap-northeast-1:193400596843:function:mpp-clients-travillio-custom-apis-dev-iDecideCreateUser"
+      },
+      {
+        "name": "iDecideUpdateUser",
+        "query" : "SELECT * FROM [dbo].[iDecideUsers] WHERE [iDecideID] IS NULL",
+        "function": "arn:aws:lambda:ap-northeast-1:193400596843:function:mpp-clients-travillio-custom-apis-dev-iDecideUpdateUser"
+      }
+    ]
+  }
+}

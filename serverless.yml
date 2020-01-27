@@ -46,15 +46,22 @@ provider:
       Action:
         - sqs:DeleteMessage
         - sqs:GetQueueUrl
-        - sqs:SendMessage  
+        - sqs:SendMessage
         - sqs:GetQueueAttributes
       Resource: "arn:aws:sqs:${self:provider.region}:*:DeadLetterQueue"
+    - Effect: "Allow"
+      Action:
+        - lambda:InvokeAsync
+        - lambda:InvokeFunction
+      Resource: "*"
 
 functions:
   SPRunner:
     handler: handlers/sp-runner-handler.main
+    timeout: 60
   JobsDispatcher:
     handler: handlers/jobs-dispatcher-handler.main
+    timeout: 60
 
 resources:
   Resources:

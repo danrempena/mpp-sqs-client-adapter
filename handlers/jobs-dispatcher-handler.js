@@ -1,7 +1,5 @@
 import helper from '../lib/helper'
-import AWS from "aws-sdk"
-
-const lambda = new AWS.Lambda({apiVersion: '2015-03-31'})
+import mockData from '../mocks/events/queue-data-event'
 
 export class JobsDispatcherHandler {
 
@@ -12,15 +10,36 @@ export class JobsDispatcherHandler {
 
   async main(callback) {
     try{
-      const { Messages : data } = await helper.dispatch_sp_results()
-      // const queueMessages = await helper.dispatch_sp_results()
+      const { Attributes } = await helper.available_message_count()
+      const { data } = mockData
 
-      console.log(data)
+      var queue_counts = parseInt(Attributes.ApproximateNumberOfMessages)
+
+      if(queue_counts > 0){
+        // const { data } = JSON.parse(await this.getResultsOnQueue())
+        const fncName = data.job.function
+        const test = await helper.invoke_functions(data, fncName)
+        console.log(test)
+
+      }else{
+        console.log('No Available Message!')
+      }
+
       callback(null, 'Success')
     }catch (error) {
       console.error(error)
       callback(error)
     }
+  }
+
+  async getResultsOnQueue() {
+    const { Messages } = await helper.dispatch_sp_results()
+    return Messages.map((message) => {
+      if (message.Body) {
+        return message.Body
+      }
+      return null
+    })
   }
 }
 
