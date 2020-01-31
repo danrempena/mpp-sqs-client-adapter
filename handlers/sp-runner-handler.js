@@ -17,9 +17,9 @@ export class SpRunnerHandler {
       await Promise.all(jobs.map(async (job) => {
         const { data } = await mppSQLAxios.post('/queries', {
           query: job.query,
-          /*options: {
+          options: {
             type: 'SELECT'
-          }*/
+          }
         })
 
         const jobData = {
@@ -36,7 +36,6 @@ export class SpRunnerHandler {
       callback(error)
     }
   }
-
 }
 
 export const mppSQLAxiosPublic = axios.create({

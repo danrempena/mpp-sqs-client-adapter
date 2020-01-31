@@ -10,21 +10,25 @@ export class JobsDispatcherHandler {
 
   async main(callback) {
     try{
-      const { Attributes } = await helper.available_message_count()
-      const { data } = mockData
+      const { Messages } = await helper.dispatch_sp_results()
 
-      var queue_counts = parseInt(Attributes.ApproximateNumberOfMessages)
+      if(Boolean(Messages) && Messages.length){
+        for(let i = 0, l = Messages.length; i < l; i++){
+          const { data } = mockData
+          const handle = Messages[i].ReceiptHandle
+          // const { data } = JSON.parse(Messages[i].Body)
+          const fncName = data.job.function
+          const ClientApiResponse = await helper.invoke_functions(data, fncName)
 
-      if(queue_counts > 0){
-        // const { data } = JSON.parse(await this.getResultsOnQueue())
-        const fncName = data.job.function
-        const test = await helper.invoke_functions(data, fncName)
-        console.log(test)
-
+          if(ClientApiResponse){
+            const { success, fail } = ClientApiResponse.Payload
+            console.log(success)
+            // await helper.delete_success_job(handle)
+          }
+        }
       }else{
         console.log('No Available Message!')
       }
-
       callback(null, 'Success')
     }catch (error) {
       console.error(error)
@@ -32,15 +36,6 @@ export class JobsDispatcherHandler {
     }
   }
 
-  async getResultsOnQueue() {
-    const { Messages } = await helper.dispatch_sp_results()
-    return Messages.map((message) => {
-      if (message.Body) {
-        return message.Body
-      }
-      return null
-    })
-  }
 }
 
 export const main = async (event, context, callback) => {
