@@ -1,25 +1,42 @@
 {
-  "name": "notes-app-api",
+  "name": "mpp-sqs-client-adapter",
   "version": "1.1.0",
-  "description": "A Node.js starter for the Serverless Framework with async/await and unit test support",
-  "main": "handler.js",
+  "description": "A serverless project that store queues from MPP SP's",
   "scripts": {
-    "test": "serverless-bundle test"
+    "test": "jest --setupFiles dotenv/config",
+    "sls_deploy": "serverless deploy"
   },
-  "author": "",
+  "author": "Danrem B. Pena <danrem@multisoft.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/AnomalyInnovations/serverless-nodejs-starter.git"
   },
   "devDependencies": {
-    "serverless-bundle": "^1.2.5",
-    "serverless-dotenv-plugin": "^2.1.1",
+    "babel-core": "^6.26.3",
+    "babel-eslint": "^10.0.1",
+    "babel-loader": "^7.1.4",
+    "babel-plugin-source-map-support": "^1.0.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-3": "^6.24.1",
+    "dotenv": "^7.0.0",
+    "eslint": "^5.15.3",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.17.3",
+    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-promise": "^4.1.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "jsonwebtoken": "^8.5.1",
     "serverless-offline": "^5.3.3",
-    "jwt-decode": "^2.2.0"
+    "serverless-pseudo-parameters": "^2.4.0",
+    "serverless-webpack": "^5.1.0",
+    "webpack": "^4.16.2",
+    "webpack-node-externals": "^1.6.0"
   },
   "dependencies": {
+    "aws-sdk": "^2.475.0",
     "axios": "^0.18.1",
-    "aws-sdk": "^2.475.0"
+    "babel-runtime": "^6.26.0"
   }
 }

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import helper from '../lib/helper'
+
 var clientInfo = ''
 
 export class SpRunnerHandler {
@@ -9,9 +10,9 @@ export class SpRunnerHandler {
     this._context = context
   }
 
-  async main(callback) {
+  async main (callback) {
     try {
-      const { client , jobs } = this._event.detail
+      const { client, jobs } = this._event.detail
       clientInfo = client
 
       await Promise.all(jobs.map(async (job) => {
@@ -23,7 +24,7 @@ export class SpRunnerHandler {
         })
 
         const jobData = {
-          data: { client, job,  SPResults : data}
+          data: { client, job, SPResults: data }
         }
         if (Boolean(data) && data.length) {
           console.log('SP Results Length: ', data.length)
@@ -31,7 +32,7 @@ export class SpRunnerHandler {
         }
       }))
       callback(null, 'Success')
-    }catch (error) {
+    } catch (error) {
       console.error(error)
       callback(error)
     }

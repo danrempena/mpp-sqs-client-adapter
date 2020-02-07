@@ -13,18 +13,12 @@ export class JobsDispatcherHandler {
       const { Messages } = await helper.dispatch_sp_results()
 
       if(Boolean(Messages) && Messages.length){
+        console.log('Messages length : ' + Messages.length)
         for(let i = 0, l = Messages.length; i < l; i++){
-          const { data } = mockData
-          const handle = Messages[i].ReceiptHandle
-          // const { data } = JSON.parse(Messages[i].Body)
-          const fncName = data.job.function
-          const ClientApiResponse = await helper.invoke_functions(data, fncName)
+          // const { data } = mockData
+          await helper.invoke_functions(Messages[i])
 
-          if(ClientApiResponse){
-            const { success, fail } = ClientApiResponse.Payload
-            console.log(success)
-            // await helper.delete_success_job(handle)
-          }
+          console.log('Job release on Queue.')
         }
       }else{
         console.log('No Available Message!')
@@ -35,7 +29,6 @@ export class JobsDispatcherHandler {
       callback(error)
     }
   }
-
 }
 
 export const main = async (event, context, callback) => {

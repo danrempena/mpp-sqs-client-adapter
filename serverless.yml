@@ -1,29 +1,25 @@
 service: mpp-client-sqs-adapter
 
-# Create an optimized package for our functions
-package:
-  individually: true
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-pseudo-parameters
 
 custom:
   stage: ${opt:stage, self:provider.stage}
-  bundle:
-    sourcemaps: true      # Enable source maps
-    caching: true         # Enable Webpack caching
-    stats: false          # Don't print out any Webpack output
-    linting: false         # Enable linting as a part of the build process
-
-plugins:
-  - serverless-bundle # Package our functions with Webpack
-  - serverless-offline
+  pseudoParameters:
+    allowReferences: false
+  ssmParamNamespace: /mpp-client-sqs-adapter/${self:custom.stage}
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
 
 provider:
   name: aws
   runtime: nodejs10.x
   stage: dev
   region: ap-northeast-1
-  account: 193400596843
   environment: ${file(env.yml):${self:custom.stage}}
-
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -33,7 +29,7 @@ provider:
         - ssm:GetParametersByPath
         - ssm:GetParameterHistory
       Resource:
-        - "arn:aws:ssm:${self:provider.region}:${self:provider.account}:parameter/mpp-clients/*"
+        - "arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/mpp-clients/*"
     - Effect: "Allow"
       Action:
         - sqs:DeleteMessage
@@ -64,25 +60,4 @@ functions:
     timeout: 60
 
 resources:
-  Resources:
-    JobsQueue:
-      Type: "AWS::SQS::Queue"
-      Properties:
-        QueueName: "JobsQueue"
-        RedrivePolicy:
-          deadLetterTargetArn:
-            Fn::GetAtt:
-              - JobsDeadLetterQueue
-              - Arn
-          maxReceiveCount: 4
-    JobsDeadLetterQueue:
-      Type: "AWS::SQS::Queue"
-      Properties:
-        QueueName: "JobsDeadLetterQueue"
-    JobsQueueUrlParameter:
-      Type: "AWS::SSM::Parameter"
-      Properties:
-        Name: "/mpp-clients/JOBS_QUEUE_URL"
-        Value:
-          Ref: JobsQueue
-        Type: String
+  - ${file(resources/queue-topic.yml)}

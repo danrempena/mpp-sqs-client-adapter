@@ -1,0 +1,29 @@
+Resources:
+  JobsQueue:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: "JobsQueue"
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt:
+            - JobsDeadLetterQueue
+            - Arn
+        maxReceiveCount: 4
+  JobsDeadLetterQueue:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: "JobsDeadLetterQueue"
+  JobsQueueUrlParameter:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Name: "${self:custom.ssmParamNamespace}/JOBS_QUEUE_URL"
+      Value:
+        Ref: JobsQueue
+      Type: String
+  JobsDeadLetterQueueParams:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Name: "${self:custom.ssmParamNamespace}/JOBS_DEAD_QUEUE_URL"
+      Value:
+        Ref: JobsDeadLetterQueue
+      Type: String
